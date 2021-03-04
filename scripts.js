@@ -11,42 +11,61 @@ const Modal = {
     }
 }
 
-const transactions = [
-    {
-        id: 1,
-        description: 'Luz',
-        amount: -50000,
-        date: '23/02/2021'
-    },
-    {
-        id: 2,
-        description: 'Website',
-        amount: 500000,
-        date: '23/02/2021'
-    },
-    {
-        id: 3,
-        description: 'Internet',
-        amount: -20000,
-        date: '23/02/2021'
-    },
-    {
-        id: 4,
-        description: 'Vendi um treco',
-        amount: 400000,
-        date: '23/02/2021'
-    },
-]
-
 const Transaction = {
-    incomes() {
-        return 'soma as entradas'
+    all: [
+        {
+            description: 'Luz',
+            amount: -1000,
+            date: '23/02/2021'
+        },
+        {
+            description: 'Website',
+            amount: 50000,
+            date: '23/02/2021'
+        },
+        {
+            description: 'Internet',
+            amount: -2000,
+            date: '23/02/2021'
+        },
+        {
+            description: 'Vendi um treco',
+            amount: 40000,
+            date: '23/02/2021'
+        },
+    ],
+    add(transaction){
+        Transaction.all.push(transaction);
+
+        App.reload()
     },
-    expanses() {
-        return 'soma as saidas'
+    remove(index){
+        Transaction.all.splice(index,1);
+        App.reload()
+    },
+    incomes() {
+        //return 'soma as entradas'
+        let income = 0;
+        Transaction.all.forEach(transaction => {
+            if (transaction.amount > 0){
+                income += transaction.amount;
+            }
+        });
+        return income;
+    },
+    expenses() {
+        //return 'soma as saidas'
+        let expense = 0;
+        Transaction.all.forEach(transaction => {
+            if (transaction.amount < 0){
+                expense += transaction.amount;
+            }
+        });
+        return expense;
     },
     total() {
-        return 'entradas - saidas'
+        //return 'entradas - saidas'
+        return Transaction.incomes() + Transaction.expenses();
     }
 }
 
@@ -69,17 +88,19 @@ const DOM = {
         `
         return html
     },
-
     updateBalance() {
         document
             .getElementById('incomeDisplay')
-            .innerHTML = Transaction.incomes()
+            .innerHTML = Utils.formatCurrency(Transaction.incomes())
         document
             .getElementById('expenseDisplay')
-            .innerHTML = Transaction.expanses()
+            .innerHTML = Utils.formatCurrency(Transaction.expenses())
         document
             .getElementById('totalDisplay')
-            .innerHTML = Transaction.total()
+            .innerHTML = Utils.formatCurrency(Transaction.total())
+    },
+    clearTransactions() {
+        DOM.transactionsContainer.innerHTML = ''
     }
 }
 
@@ -94,11 +115,90 @@ const Utils = {
         })
         const currency = signal + value
         return currency
+    },
+    formatAmount(value) {
+        console.log(value)
+        value = Number(value) * 100
+        return value
+    },
+    formatDate(value) {
+        const aux = value.split("-")
+        value = `${aux[2]}/${aux[1]}/${aux[1]}`
+        return value
     }
 }
 
-transactions.forEach(function(transaction){
-    DOM.addTransaction(transaction)
-})
+const Form = {
+    description: document.querySelector('input#description'),
+    amount: document.querySelector('input#amount'),
+    date: document.querySelector('input#date'),
+    getValues() {
+        return {
+            description: Form.description.value,
+            amount: Form.amount.value,
+            date: Form.date.value
+        }
+    },
+    validadeFields(){
+        const {description,amount,date} = Form.getValues()
+        if(description.trim() === "" || 
+           amount.trim() === "" ||
+           date.trim() === "") {
+               throw new Error("Preencha todos os campos")
+           }
+    },
+    formatValues(){
+        let {description,amount,date} = Form.getValues()
+        amount = Utils.formatAmount(amount)
+        date = Utils.formatDate(date)
+        return {
+            description,
+            amount,
+            date
+        }
+    },
+    saveTransaction(transaction){
+        Transaction.add(transaction)
+    },
+    clearFields(){
+        Form.description.value = ""
+        Form.amount.value = ""
+        Form.date.value = ""
+    },
+    submit(event){
+        event.preventDefault()
+        try {
+            Form.validadeFields()
+            const transaction = Form.formatValues()
+            Form.saveTransaction(transaction)   
+            Form.clearFields() 
+            Modal.close()
+        } catch (error) {
+            alert(error.message)
+        }
+        
+    }
+}
 
-DOM.updateBalance()
+const App = {
+    init() {
+        Transaction.all.forEach(transaction => {
+            DOM.addTransaction(transaction)
+        });
+        DOM.updateBalance();
+    },
+    reload() {
+        DOM.clearTransactions();
+        App.init();
+    }
+}
+
+App.init()
+
+
+// Transaction.add({
+//     description: 'Alo',
+//     amount: 200,
+//     date: '01/03/2021'
+// })
+// Transaction.remove(2)
