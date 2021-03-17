@@ -1,86 +1,174 @@
-const Modal = {
-    open(){
-        document
-            .querySelector('.modal-overlay')
-            .classList.add('active')
+TiposAtivo = [
+    {
+        Codigo: 1,
+        Descricao: "Ação"
     },
-    close(){
-        document
-            .querySelector('.modal-overlay')
-            .classList.remove('active')
+    {
+        Codigo: 2,
+        Descricao: "FII"
     }
-}
-
-const transactions = [
+]
+CategoriasAtivo = [
     {
-        id: 1,
-        description: 'Luz',
-        amount: -50000,
-        date: '23/02/2021'
+        Codigo:1,
+        Descricao:"LOGÍSTICA"
     },
     {
-        id: 2,
-        description: 'Website',
-        amount: 500000,
-        date: '23/02/2021'
+        Codigo:2,
+        Descricao:"SHOPPING"
     },
     {
-        id: 3,
-        description: 'Internet',
-        amount: -20000,
-        date: '23/02/2021'
+        Codigo:3,
+        Descricao:"FUNDO DE FUNDOS"
     },
     {
-        id: 4,
-        description: 'Vendi um treco',
-        amount: 400000,
-        date: '23/02/2021'
+        Codigo:4,
+        Descricao:"LAJES COORPORATIVAS"
+    },
+    {
+        Codigo:5,
+        Descricao:"PAPEIS"
+    },
+]
+Ativos = [
+    {
+        Codigo:"HFOF11",
+        Tipo:2,
+        Categoria: 1,
+        PrecoMedio: 10248,
+        PrecoAtual: 10086,
+        Posicao: 2,
+        DividendYeld: 789,
+        Dividendo: 55,
+        Atualizacao: "2021-03-16 10:30:00"
+    },
+    {
+        Codigo:"MXRF11",
+        Tipo:2,
+        Categoria: 5,
+        PrecoMedio: 1055,
+        PrecoAtual: 1063,
+        Posicao: 7,
+        DividendYeld: 800,
+        Dividendo: 8,
+        Atualizacao: "2021-03-09 14:33:10"
+    },
+    {
+        Codigo:"VILG11",
+        Tipo:2,
+        Categoria: 1,
+        PrecoMedio: 12020,
+        PrecoAtual: 11990,
+        Posicao: 3,
+        DividendYeld: 0,
+        Dividendo: 0,
+        Atualizacao: "2021-03-09 14:33:10"
+    },
+    {
+        Codigo:"VINO11",
+        Tipo:2,
+        Categoria: 4,
+        PrecoMedio: 6127,
+        PrecoAtual: 6150,
+        Posicao: 9,
+        DividendYeld: 0,
+        Dividendo: 0,
+        Atualizacao: "2021-03-09 14:33:10"
+    },
+    {
+        Codigo:"VRTA11",
+        Tipo:2,
+        Categoria: 5,
+        PrecoMedio: 11481,
+        PrecoAtual: 11480,
+        Posicao: 4,
+        DividendYeld: 0,
+        Dividendo: 0,
+        Atualizacao: "2021-03-09 14:33:10"
+    },
+    {
+        Codigo:"VISC11",
+        Tipo:2,
+        Categoria: 2,
+        PrecoMedio: 11676,
+        PrecoAtual: 10840,
+        Posicao: 2,
+        DividendYeld: 800,
+        Dividendo: 8,
+        Atualizacao: "2021-03-09 14:33:10"
     },
 ]
 
-const Transaction = {
-    incomes() {
-        return 'soma as entradas'
+const Storage = {
+    get() {
+        //return JSON.parse(localStorage.getItem("dev.finances:transactions")) || []
     },
-    expanses() {
-        return 'soma as saidas'
-    },
-    total() {
-        return 'entradas - saidas'
+    set(transactions) {
+        //localStorage.setItem("dev.finances:transactions", JSON.stringify(transactions))
     }
 }
 
 const DOM = {
-    transactionsContainer: document.querySelector('#data-table tbody'),
-    addTransaction(transaction, ndex) {
-        //console.log(transaction)
+    tableCarteira: document.querySelector('#carteira table tbody'),
+    escreveLinhaAtivo(ativo, index) {
         const tr = document.createElement('tr')
-        tr.innerHTML = DOM.innerHTMLTransaction(transaction)
-        DOM.transactionsContainer.appendChild(tr)
+        tr.innerHTML = DOM.escreveColunasAtivo(ativo,index)
+        tr.dataset.index = index
+        DOM.tableCarteira.appendChild(tr)
+        var lim = new Date(ativo.Atualizacao)
+        lim.setDate(lim.getDate() + 2)
+        //console.log(aut)
+        //console.log(lim)
+        var hoj = new Date()
+        if (hoj.getTime() > lim.getTime()) {
+            Utils.buscaAtualizacoesAtivo(ativo,index)
+        }
     },
-    innerHTMLTransaction(transaction) {
-        const CssClass = transaction.amount > 0 ? 'income' : 'expense'
-        const amount = Utils.formatCurrency(transaction.amount)
+    escreveColunasAtivo(ativo,index) {
+        //const CssClass = transaction.amount > 0 ? 'income' : 'expense'
+        const categoria = CategoriasAtivo.find( item => item.Codigo === ativo.Categoria )
+        const precoMedio = Utils.formatCurrency(ativo.PrecoMedio)
+        const precoAtual = Utils.formatCurrency(ativo.PrecoAtual)
+        const corPrecoMedio = (ativo.PrecoMedio < ativo.PrecoAtual) ? "baixa" : "alta" 
+        const corPrecoAtual = (ativo.PrecoMedio > ativo.PrecoAtual) ? "baixa" : "alta"
+        const atualizacao = Utils.formatData(ativo.Atualizacao,)
+        const patrimonio = Utils.formatCurrency(Number(ativo.PrecoAtual) * Number(ativo.Posicao))
+        const dividendYeld = Utils.formatPercent(ativo.DividendYeld)
+        const dividendo = Utils.formatCurrency(ativo.Dividendo)
+        const dividendos = Utils.formatCurrency(Number(ativo.Dividendo) * Number(ativo.Posicao))
         const html = `
-            <td class="description">${transaction.description}</td>
-            <td class="${CssClass}">${amount}</td>
-            <td class="date">${transaction.date}</td>
-            <td><img src="/assets/minus.svg" alt="Remover transação" class="minus"></td>
+            <td>${categoria.Descricao}</td>
+            <td><span class="ativo">${ativo.Codigo}</span></td>
+            <td><span class="${corPrecoMedio}">${precoMedio}</span></td>
+            <td><span class="${corPrecoAtual}">${precoAtual}</span><span class="atualizacao">Atualizado em ${atualizacao}</span></td>
+            <td>${ativo.Posicao}</td>
+            <td>${patrimonio}</td>
+            <td>${dividendYeld}</td>
+            <td>${dividendo}</td>
+            <td>${dividendos}</td>
         `
         return html
     },
-
+    informaAtualizacaoAtivo(ativo,index) {
+        const linha = document.querySelector(`#carteira table tbody tr[data-index="${index}"]`)
+        linha.innerHTML = `<td colspan="9">Ativo ${ativo.Codigo} tem mais de 48h, atualizando...</td>`
+    }
+    /*
     updateBalance() {
         document
             .getElementById('incomeDisplay')
-            .innerHTML = Transaction.incomes()
+            .innerHTML = Utils.formatCurrency(Transaction.incomes())
         document
             .getElementById('expenseDisplay')
-            .innerHTML = Transaction.expanses()
+            .innerHTML = Utils.formatCurrency(Transaction.expenses())
         document
             .getElementById('totalDisplay')
-            .innerHTML = Transaction.total()
+            .innerHTML = Utils.formatCurrency(Transaction.total())
+    },
+    clearTransactions() {
+        DOM.transactionsContainer.innerHTML = ''
     }
+    */
 }
 
 const Utils = {
@@ -94,11 +182,42 @@ const Utils = {
         })
         const currency = signal + value
         return currency
+    },
+    formatPercent(value) {
+        const signal = Number(value) < 0 ? '-' : ''
+        value = String(value).replace(/\D/g,'')     // pega todos os não numeros da string e substitui por vazio
+        value = Number(value/10000).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2})
+        const currency = signal + value
+        return currency
+    },
+    formatData(value,opt) {
+        //const aux = value.split("-")
+        //value = `${aux[2]}/${aux[1]}/${aux[1]}`
+        const d = new Date(value)
+        return d.toLocaleString("pt-BR",{ year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    },
+    formatAmount(value) {
+        value = Number(value) * 100
+        // value = Number(value.replace(/\,\./g, "") * 100)
+        // as duas formas funcionam, deixei aqui só pelo regex
+        return value
+    },
+    buscaAtualizacoesAtivo(ativo,index) {
+        DOM.informaAtualizacaoAtivo(ativo,index)
+        
+    }
+    
+}
+
+const App = {
+    init() {
+        // busca ativos e ordena por categoria
+        Ativos.sort((a, b) => (a.Categoria > b.Categoria) ? 1 : -1)
+        // escreve as linhas
+        Ativos.forEach((ativo,index) => {
+            DOM.escreveLinhaAtivo(ativo,index)
+        });
     }
 }
 
-transactions.forEach(function(transaction){
-    DOM.addTransaction(transaction)
-})
-
-DOM.updateBalance()
+App.init()
