@@ -1,159 +1,82 @@
-TiposAtivo = [
-    {
-        Codigo: 1,
-        Descricao: "Ação"
+const Modal = {
+    open(){
+        document
+            .querySelector('.modal-overlay')
+            .classList.add('active')
     },
-    {
-        Codigo: 2,
-        Descricao: "FII"
+    close(){
+        document
+            .querySelector('.modal-overlay')
+            .classList.remove('active')
     }
-]
-CategoriasAtivo = [
-    {
-        Codigo:1,
-        Descricao:"LOGÍSTICA"
-    },
-    {
-        Codigo:2,
-        Descricao:"SHOPPING"
-    },
-    {
-        Codigo:3,
-        Descricao:"FUNDO DE FUNDOS"
-    },
-    {
-        Codigo:4,
-        Descricao:"LAJES COORPORATIVAS"
-    },
-    {
-        Codigo:5,
-        Descricao:"PAPEIS"
-    },
-]
-Ativos = [
-    {
-        Codigo:"HFOF11",
-        Tipo:2,
-        Categoria: 1,
-        PrecoMedio: 10248,
-        PrecoAtual: 10086,
-        Posicao: 2,
-        DividendYeld: 789,
-        Dividendo: 55,
-        Atualizacao: "2021-03-16 10:30:00"
-    },
-    {
-        Codigo:"MXRF11",
-        Tipo:2,
-        Categoria: 5,
-        PrecoMedio: 1055,
-        PrecoAtual: 1063,
-        Posicao: 7,
-        DividendYeld: 800,
-        Dividendo: 8,
-        Atualizacao: "2021-03-09 14:33:10"
-    },
-    {
-        Codigo:"VILG11",
-        Tipo:2,
-        Categoria: 1,
-        PrecoMedio: 12020,
-        PrecoAtual: 11990,
-        Posicao: 3,
-        DividendYeld: 0,
-        Dividendo: 0,
-        Atualizacao: "2021-03-09 14:33:10"
-    },
-    {
-        Codigo:"VINO11",
-        Tipo:2,
-        Categoria: 4,
-        PrecoMedio: 6127,
-        PrecoAtual: 6150,
-        Posicao: 9,
-        DividendYeld: 0,
-        Dividendo: 0,
-        Atualizacao: "2021-03-09 14:33:10"
-    },
-    {
-        Codigo:"VRTA11",
-        Tipo:2,
-        Categoria: 5,
-        PrecoMedio: 11481,
-        PrecoAtual: 11480,
-        Posicao: 4,
-        DividendYeld: 0,
-        Dividendo: 0,
-        Atualizacao: "2021-03-09 14:33:10"
-    },
-    {
-        Codigo:"VISC11",
-        Tipo:2,
-        Categoria: 2,
-        PrecoMedio: 11676,
-        PrecoAtual: 10840,
-        Posicao: 2,
-        DividendYeld: 800,
-        Dividendo: 8,
-        Atualizacao: "2021-03-09 14:33:10"
-    },
-]
+}
 
 const Storage = {
     get() {
-        //return JSON.parse(localStorage.getItem("dev.finances:transactions")) || []
+        return JSON.parse(localStorage.getItem("dev.finances:transactions")) || []
     },
     set(transactions) {
-        //localStorage.setItem("dev.finances:transactions", JSON.stringify(transactions))
+        localStorage.setItem("dev.finances:transactions",
+                            JSON.stringify(transactions))
+    }
+}
+
+const Transaction = {
+    all: Storage.get(),
+    add(transaction){
+        Transaction.all.push(transaction);
+
+        App.reload()
+    },
+    remove(index){
+        Transaction.all.splice(index,1);
+        App.reload()
+    },
+    incomes() {
+        //return 'soma as entradas'
+        let income = 0;
+        Transaction.all.forEach(transaction => {
+            if (transaction.amount > 0){
+                income += transaction.amount;
+            }
+        });
+        return income;
+    },
+    expenses() {
+        //return 'soma as saidas'
+        let expense = 0;
+        Transaction.all.forEach(transaction => {
+            if (transaction.amount < 0){
+                expense += transaction.amount;
+            }
+        });
+        return expense;
+    },
+    total() {
+        //return 'entradas - saidas'
+        return Transaction.incomes() + Transaction.expenses();
     }
 }
 
 const DOM = {
-    tableCarteira: document.querySelector('#carteira table tbody'),
-    escreveLinhaAtivo(ativo, index) {
+    transactionsContainer: document.querySelector('#data-table tbody'),
+    addTransaction(transaction, index) {
         const tr = document.createElement('tr')
-        tr.innerHTML = DOM.escreveColunasAtivo(ativo,index)
+        tr.innerHTML = DOM.innerHTMLTransaction(transaction,index)
         tr.dataset.index = index
-        DOM.tableCarteira.appendChild(tr)
-        var lim = new Date(ativo.Atualizacao)
-        lim.setDate(lim.getDate() + 2)
-        //console.log(aut)
-        //console.log(lim)
-        var hoj = new Date()
-        if (hoj.getTime() > lim.getTime()) {
-            Utils.buscaAtualizacoesAtivo(ativo,index)
-        }
+        DOM.transactionsContainer.appendChild(tr)
     },
-    escreveColunasAtivo(ativo,index) {
-        //const CssClass = transaction.amount > 0 ? 'income' : 'expense'
-        const categoria = CategoriasAtivo.find( item => item.Codigo === ativo.Categoria )
-        const precoMedio = Utils.formatCurrency(ativo.PrecoMedio)
-        const precoAtual = Utils.formatCurrency(ativo.PrecoAtual)
-        const corPrecoMedio = (ativo.PrecoMedio < ativo.PrecoAtual) ? "baixa" : "alta" 
-        const corPrecoAtual = (ativo.PrecoMedio > ativo.PrecoAtual) ? "baixa" : "alta"
-        const atualizacao = Utils.formatData(ativo.Atualizacao,)
-        const patrimonio = Utils.formatCurrency(Number(ativo.PrecoAtual) * Number(ativo.Posicao))
-        const dividendYeld = Utils.formatPercent(ativo.DividendYeld)
-        const dividendo = Utils.formatCurrency(ativo.Dividendo)
-        const dividendos = Utils.formatCurrency(Number(ativo.Dividendo) * Number(ativo.Posicao))
+    innerHTMLTransaction(transaction,index) {
+        const CssClass = transaction.amount > 0 ? 'income' : 'expense'
+        const amount = Utils.formatCurrency(transaction.amount)
         const html = `
-            <td>${categoria.Descricao}</td>
-            <td><span class="ativo">${ativo.Codigo}</span></td>
-            <td><span class="${corPrecoMedio}">${precoMedio}</span></td>
-            <td><span class="${corPrecoAtual}">${precoAtual}</span><span class="atualizacao">Atualizado em ${atualizacao}</span></td>
-            <td>${ativo.Posicao}</td>
-            <td>${patrimonio}</td>
-            <td>${dividendYeld}</td>
-            <td>${dividendo}</td>
-            <td>${dividendos}</td>
+            <td class="description">${transaction.description}</td>
+            <td class="${CssClass}">${amount}</td>
+            <td class="date">${transaction.date}</td>
+            <td><img onclick="Transaction.remove(${index})" src="/assets/minus.svg" alt="Remover transação" class="minus"></td>
         `
         return html
     },
-    informaAtualizacaoAtivo(ativo,index) {
-        const linha = document.querySelector(`#carteira table tbody tr[data-index="${index}"]`)
-        linha.innerHTML = `<td colspan="9">Ativo ${ativo.Codigo} tem mais de 48h, atualizando...</td>`
-    }
-    /*
     updateBalance() {
         document
             .getElementById('incomeDisplay')
@@ -168,7 +91,6 @@ const DOM = {
     clearTransactions() {
         DOM.transactionsContainer.innerHTML = ''
     }
-    */
 }
 
 const Utils = {
@@ -183,41 +105,92 @@ const Utils = {
         const currency = signal + value
         return currency
     },
-    formatPercent(value) {
-        const signal = Number(value) < 0 ? '-' : ''
-        value = String(value).replace(/\D/g,'')     // pega todos os não numeros da string e substitui por vazio
-        value = Number(value/10000).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2})
-        const currency = signal + value
-        return currency
-    },
-    formatData(value,opt) {
-        //const aux = value.split("-")
-        //value = `${aux[2]}/${aux[1]}/${aux[1]}`
-        const d = new Date(value)
-        return d.toLocaleString("pt-BR",{ year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-    },
     formatAmount(value) {
         value = Number(value) * 100
         // value = Number(value.replace(/\,\./g, "") * 100)
         // as duas formas funcionam, deixei aqui só pelo regex
         return value
     },
-    buscaAtualizacoesAtivo(ativo,index) {
-        DOM.informaAtualizacaoAtivo(ativo,index)
+    formatDate(value) {
+        const aux = value.split("-")
+        value = `${aux[2]}/${aux[1]}/${aux[1]}`
+        return value
+    }
+}
+
+const Form = {
+    description: document.querySelector('input#description'),
+    amount: document.querySelector('input#amount'),
+    date: document.querySelector('input#date'),
+    getValues() {
+        return {
+            description: Form.description.value,
+            amount: Form.amount.value,
+            date: Form.date.value
+        }
+    },
+    validadeFields(){
+        const {description,amount,date} = Form.getValues()
+        if(description.trim() === "" || 
+           amount.trim() === "" ||
+           date.trim() === "") {
+               throw new Error("Preencha todos os campos")
+           }
+    },
+    formatValues(){
+        let {description,amount,date} = Form.getValues()
+        amount = Utils.formatAmount(amount)
+        date = Utils.formatDate(date)
+        return {
+            description,
+            amount,
+            date
+        }
+    },
+    saveTransaction(transaction){
+        Transaction.add(transaction)
+    },
+    clearFields(){
+        Form.description.value = ""
+        Form.amount.value = ""
+        Form.date.value = ""
+    },
+    submit(event){
+        event.preventDefault()
+        try {
+            Form.validadeFields()
+            const transaction = Form.formatValues()
+            Form.saveTransaction(transaction)   
+            Form.clearFields() 
+            Modal.close()
+        } catch (error) {
+            alert(error.message)
+        }
         
     }
-    
 }
 
 const App = {
     init() {
-        // busca ativos e ordena por categoria
-        Ativos.sort((a, b) => (a.Categoria > b.Categoria) ? 1 : -1)
-        // escreve as linhas
-        Ativos.forEach((ativo,index) => {
-            DOM.escreveLinhaAtivo(ativo,index)
+        Transaction.all.forEach((transaction,index) => {
+            DOM.addTransaction(transaction,index)
         });
+        DOM.updateBalance();
+
+        Storage.set(Transaction.all)
+    },
+    reload() {
+        DOM.clearTransactions();
+        App.init();
     }
 }
 
 App.init()
+
+
+// Transaction.add({
+//     description: 'Alo',
+//     amount: 200,
+//     date: '01/03/2021'
+// })
+// Transaction.remove(2)
