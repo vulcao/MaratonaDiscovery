@@ -18,7 +18,7 @@ body {
     font-family: 'Poppins', sans-serif;
 }
 .container {
-    width: min(80vw, 800px);
+    width: min(95vw, 1200px);
     margin: auto;
 }
 /* Titulos ================= */
@@ -68,8 +68,8 @@ button:hover {
 }
 /* Header ================= */
 header {
-    background: #2D4A22;
-    padding: 2rem 0 10rem;
+    background: #4640ab;
+    padding: 1rem 0 1rem;
     text-align: center;
 }
 #logo {
@@ -88,87 +88,87 @@ header {
     white-space: nowrap;
     border-width: 0;
 }
-/* Balance ================= */
-#balance {
-    margin-top: -8rem;
-}
-#balance h2 {
-    color: #fff;
-    margin-top: 0;
-}
-/* Cards ================= */
-.card {
-    background: #fff;
-    padding: 1.5rem 2rem;
-    border-radius: 0.25rem;
-    margin-bottom: 2rem;
-    color: var(--dark-blue);
-}
-.card h3 {
-    font-weight: normal;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.card p {
-    font-size: 2rem;
-    line-height: 3rem;
-    margin-top: 1rem;
-}
-.card.total {
-    background: var(--green);
-    color: #fff;
+/* Carteira ================= */
 
-}
-/* Transactions ================= */
 
-#transaction {
+
+#carteira {
     display: block;
     width: 100%;
     overflow-x: auto;
 }
-#data-table {
+#carteira table {
     width: 100%;
     border-spacing: 0 0.5rem;
     color: #969cb3;
 }
-#data-table tbody tr {
-    opacity: 0.7; 
-}
-#data-table tbody tr:hover {
+#carteira  table tbody tr {
+    opacity: 0.7;
     opacity: 1;
 }
-#data-table thead th {
-    background: #fff;
-    color: #969cb3;
+#carteira  table tbody tr:hover {
+    opacity: 1.5;
+}
+#carteira  table thead th {
+    background: #969cb3;
+    color: white;
     font-weight: normal;
-    padding: 1rem 2rem;
+    padding: 0.3rem;
     text-align: left;
 }
-#data-table td {
+#carteira  table td {
     background: #fff;
-    padding: 1rem 2rem;
+    padding: 0.31rem;
     color: #969cb3;
+    vertical-align: top;
 }
-#data-table thead th:first-child,
-#data-table tbody td:first-child {
+#carteira  table td span.ativo {
+    padding: 1px 6px;
+    border: 1px solid #e8e8e8;
+    color: #525252;
+    border-radius: 5px;
+    width: 65px;
+    display: flex;
+}
+#carteira  table td span.ativo.selecionado {
+    background-color: #e92929;
+    color: white;
+}
+#carteira  table td span.alta {
+    color: var(--red);
+}
+#carteira  table td span.baixa {
+    color: var(--green)
+}
+#carteira  table td span.atualizacao {
+    display: block;
+    font-size: 0.6rem;
+    width: 5rem;
+}
+#carteira  table thead th:first-child,
+#carteira  table tbody td:first-child {
     border-radius: 0.25rem 0 0 0.25rem;
+    width: 165px;
 }
-#data-table thead th:last-child,
-#data-table tbody td:last-child {
+#carteira  table thead th:nth-child(8),
+#carteira  table tbody td:nth-child(8) {
+    width: 100px;
+}
+#carteira  table thead th:last-child,
+#carteira  table tbody td:last-child {
     border-radius: 0 0.25rem 0.25rem 0;
+    width: 100px;
 }
-#data-table tbody td.description {
+#carteira  table tbody td.description {
     color: var(--dark-blue);
 }
-#data-table tbody td.income {
+#carteira  table tbody td.income {
     color: #12a453
 }
-#data-table tbody td.expense {
+#carteira  table tbody td.expense {
     color: #e92929
 }
-#data-table tbody td.date {
+#carteira  table tbody td.date {
     color: inherit
 }
 /* Modal ================= */
